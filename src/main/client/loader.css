@@ -1,0 +1,76 @@
+.initial-loader--mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 9999;
+  background: #1c212a;
+}
+
+.initial-loader--container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.initial-loader--container .initial-loader {
+  display: flex;
+  width: 100px;
+  height: 60px;
+  margin: 1rem auto;
+  transform: rotate(180deg);
+}
+@keyframes soundwave {
+  0% {
+    height: 20px;
+  }
+  100% {
+    height: 58px;
+  }
+}
+.initial-loader--container .initial-loader .initial-loader--bar {
+  bottom: 1px;
+  width: 2px;
+  height: 20px;
+  margin-right: 4px;
+  margin-left: 4px;
+  background: #B7F0C1;
+  animation-name: soundwave;
+  animation-duration: 0ms;
+  animation-play-state: running;
+  animation-timing-function: linear;
+  animation-delay: -1200ms;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(1) {
+  animation-duration: 711ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(2) {
+  animation-duration: 649.5ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(3) {
+  animation-duration: 610.5ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(4) {
+  animation-duration: 687ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(5) {
+  animation-duration: 600ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(6) {
+  animation-duration: 640.5ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(7) {
+  animation-duration: 661.5ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(8) {
+  animation-duration: 643.5ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(9) {
+  animation-duration: 730.5ms;
+}
+.initial-loader--container .initial-loader .initial-loader--bar:nth-child(10) {
+  animation-duration: 663ms;
+}

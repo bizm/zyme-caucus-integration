@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>fi.zyme.caucus</groupId>
+  <artifactId>zyme-caucus</artifactId>
+  <version>0.1-SNAPSHOT</version>
+
+  <packaging>jar</packaging>
+  <name>zyme-caucus-integration-app</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <log4j.version>1.2.17</log4j.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>2.22.1</maven-surefire-plugin.version>
+    <vertx-maven-plugin.version>1.0.22</vertx-maven-plugin.version>
+
+    <vertx.version>3.8.4</vertx.version>
+    <slf4j.version>1.7.29</slf4j.version>
+    <junit-jupiter.version>5.4.0</junit-jupiter.version>
+    <logback.classic.version>1.2.3</logback.classic.version>
+    <jsonwebtoken.version>0.10.7</jsonwebtoken.version>
+
+    <main.verticle>fi.zyme.caucus.MainVerticle</main.verticle>
+    <resources.directory>${basedir}/src/main/resources</resources.directory>
+    <resources.profiles>${basedir}/src/main/profiles</resources.profiles>
+    <resources.static-files.subpath>webroot</resources.static-files.subpath>
+    <resources.fonts-subpath>${resources.static-files.subpath}/fonts</resources.fonts-subpath>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-stack-depchain</artifactId>
+        <version>${vertx.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-config</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-auth-jwt</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web</artifactId>
+      <version>${vertx.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-web-client</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-rx-java2</artifactId>
+      <version>${vertx.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>${jsonwebtoken.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>${jsonwebtoken.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-jackson</artifactId>
+        <version>${jsonwebtoken.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.classic.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit-jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+
+    <resources>
+      <resource>
+        <directory>${resources.directory}</directory>
+        <excludes>
+          <exclude>${resources.fonts-subpath}/*.*</exclude>
+          <exclude>client/**</exclude>
+        </excludes>
+        <filtering>true</filtering>
+      </resource>
+      <resource>
+        <directory>${resources.directory}</directory>
+        <includes>
+          <include>${resources.fonts-subpath}/*.*</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+
+    <plugins>
+
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <release>11</release>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
+
+      <plugin>
+        <groupId>io.reactiverse</groupId>
+        <artifactId>vertx-maven-plugin</artifactId>
+        <version>${vertx-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>vmp</id>
+            <goals>
+              <goal>initialize</goal>
+              <goal>package</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <redeploy>true</redeploy>
+          <verticle>${main.verticle}</verticle>
+          <runArgs>
+            <runArg>-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory</runArg>
+            <runArg>-Dio.netty.tryReflectionSetAccessible=true</runArg>
+            <runArg>-Dvertx.disableFileCaching=true</runArg>
+          </runArgs>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>dev-docker</id>
+      <properties>
+        <logback.root.log.level>ALL</logback.root.log.level>
+        <logback.netty.log.level>WARN</logback.netty.log.level>
+      </properties>
+      <build>
+        <resources>
+          <resource>
+            <directory>${resources.profiles}/dev-docker</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+    <profile>
+      <id>test</id>
+      <properties>
+        <logback.root.log.level>DEBUG</logback.root.log.level>
+        <logback.netty.log.level>WARN</logback.netty.log.level>
+      </properties>
+      <build>
+        <resources>
+          <resource>
+            <directory>${resources.profiles}/test</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <logback.root.log.level>INFO</logback.root.log.level>
+        <logback.netty.log.level>WARN</logback.netty.log.level>
+      </properties>
+      <build>
+        <resources>
+          <resource>
+            <directory>${resources.profiles}/prod</directory>
+            <filtering>true</filtering>
+          </resource>
+        </resources>
+      </build>
+    </profile>
+    <profile>
+      <id>verbose</id>
+      <properties>
+        <logback.root.log.level>ALL</logback.root.log.level>
+        <logback.netty.log.level>ALL</logback.netty.log.level>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>

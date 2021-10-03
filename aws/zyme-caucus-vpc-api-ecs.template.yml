@@ -1,0 +1,614 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: "VPC+API+ECS stack for Zyme Caucus integration"
+
+Parameters:
+  Port:
+    Type: Number
+    Default: 8080
+  Environment:
+    Type: String
+    Description: Environment name.
+    AllowedValues:
+      - test
+      - prod
+  PipelineStackName:
+    Type: String
+  DockerImageURI:
+    Type: String
+  CertificateArn:
+    Description: "The reference to an AWS-managed certificate for use by the endpoint for this domain name"
+    Type: String
+  ApiStageName:
+    Description: The name of the stage, which API Gateway uses as the first path segment
+      in the invoke Uniform Resource Identifier (URI).
+    Type: String
+    Default: api
+  ApiDataTraceEnabled:
+    Description: Specifies whether data trace logging is enabled for this API , which
+      affects the log entries pushed to CloudWatch Logs.
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+  ApiLoggingLevel:
+    Description: Logging level for this API, which affects the log entries pushed
+      to CloudWatch Logs.
+    Type: String
+    Default: ERROR
+    AllowedValues:
+    - 'OFF'
+    - ERROR
+    - INFO
+  VpcLinkId:
+    Description: Systems Manager parameter for the VPC Link which provides access to VPC resources
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /ZymeApi/test/vpcLink
+  NlbHost:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: Systems Manager parameter for the DNS name of the Network load balancer which is used as integration endpoint
+    Default: /ZymeApi/test/nlbHost
+  CaucusJwtKeySecretArn:
+    Description: ARN of secret with Caucus JWT signing key
+    Type: String
+
+Mappings:
+  EnvMapping:
+    test:
+      Name: Test
+      VpcCIDR: 10.192.0.0/24
+      Subnet1CIDR: 10.192.0.0/28
+      Subnet2CIDR: 10.192.0.16/28
+      Subnet3CIDR: 10.192.0.32/28
+      ApiThrottlingBurstLimit: 250
+      ApiThrottlingRateLimit: 500
+    prod:
+      Name: Production
+      VpcCIDR: 10.192.1.0/24
+      Subnet1CIDR: 10.192.1.0/28
+      Subnet2CIDR: 10.192.1.16/28
+      Subnet3CIDR: 10.192.1.32/28
+      ApiThrottlingBurstLimit: 500
+      ApiThrottlingRateLimit: 1000
+
+Resources:
+
+  ## VPC resources #############################################################
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !FindInMap [EnvMapping, !Ref "Environment", VpcCIDR]
+      EnableDnsHostnames: false
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub zyme-caucus-${Environment}-vpc
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub zyme-caucus-${Environment}-igw
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  Subnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: !FindInMap [EnvMapping, !Ref "Environment", Subnet1CIDR]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub zyme-caucus-${Environment}-subnet-1
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  Subnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: !FindInMap [EnvMapping, !Ref "Environment", Subnet2CIDR]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub zyme-caucus-${Environment}-subnet-2
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  Subnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select [ 2, !GetAZs  '' ]
+      CidrBlock: !FindInMap [EnvMapping, !Ref "Environment", Subnet3CIDR]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub zyme-caucus-${Environment}-subnet-3
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub zyme-caucus-${Environment}-rtb
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  Subnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref Subnet1
+
+  Subnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref Subnet2
+
+  Subnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref Subnet3
+
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub Security group for Caucus integration ECS service (${Environment})
+      GroupName: !Sub zyme-caucus-${Environment}-sg-ecs
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref Port
+          ToPort: !Ref Port
+          CidrIp: !FindInMap [EnvMapping, !Ref "Environment", VpcCIDR]
+      Tags:
+        - Key: Application ID
+          Value: Zyme Caucus
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub Security group for Caucus integration load balancer (${Environment})
+      GroupName: !Sub zyme-caucus-${Environment}-sg-alb
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - Description: HTTPS
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - Description: HTTP
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  ApiSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub Security group for Zyme API (${Environment})
+      GroupName: !Sub zyme-caucus-${Environment}-sg-api
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - Description: HTTPS
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          # allow to all in Zyme Caucus VPC
+          CidrIp: !FindInMap [EnvMapping, !Ref "Environment", VpcCIDR]
+      Tags:
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  ApiEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: false
+      SecurityGroupIds:
+        - !Ref ApiSecurityGroup
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.execute-api
+      SubnetIds:
+        - !Ref Subnet1
+        - !Ref Subnet2
+        - !Ref Subnet3
+      VpcEndpointType: Interface
+      VpcId: !Ref VPC
+
+  # API Gateway resources ######################################################
+  Api:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub zyme-caucus-api-${Environment}
+      Policy: !Sub
+        - >
+          {
+              "Version": "2012-10-17",
+              "Statement": [
+                  {
+                      "Effect": "Deny",
+                      "Principal": "*",
+                      "Action": "execute-api:Invoke",
+                      "Resource": "execute-api:/*/*/*",
+                      "Condition": {
+                          "StringNotEquals": {
+                              "aws:sourceVpc": "${VpcId}"
+                          }
+                      }
+                  },
+                  {
+                      "Effect": "Allow",
+                      "Principal": "*",
+                      "Action": "execute-api:Invoke",
+                      "Resource": "execute-api:/*/*/*"
+                  }
+              ]
+          }
+        - VpcId: !Ref VPC
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+        VpcEndpointIds:
+          - !Ref ApiEndpoint
+      # Api body placeholder tag is replaced with api.yml during CodeBuild.
+      # Placeholder must be on a separate line and only one instance per template is allowed!
+      Body:
+        <OPEN-API-BODY-PLACEHOLDER>
+      Tags:
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: !Ref ApiStageName
+      RestApiId: !Ref Api
+      DeploymentId: !Ref ApiDeployment
+      MethodSettings:
+        - HttpMethod: '*'
+          ResourcePath: /*
+          DataTraceEnabled:
+            Ref: ApiDataTraceEnabled
+          LoggingLevel:
+            Ref: ApiLoggingLevel
+          ThrottlingBurstLimit:
+            Fn::FindInMap:
+            - EnvMapping
+            - Ref: Environment
+            - ApiThrottlingBurstLimit
+          ThrottlingRateLimit:
+            Fn::FindInMap:
+            - EnvMapping
+            - Ref: Environment
+            - ApiThrottlingRateLimit
+      Tags:
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      Description: api
+      RestApiId: !Ref Api
+
+  # ELB resources ##############################################################
+  PublicLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub zyme-caucus-${Environment}-alb
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+      - Key: idle_timeout.timeout_seconds
+        Value: '30'
+      Subnets:
+        - !Ref Subnet1
+        - !Ref Subnet2
+        - !Ref Subnet3
+      SecurityGroups:
+        - !Ref AlbSecurityGroup
+      Tags:
+        - Key: Name
+          Value: Load balancer
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId: !Ref VPC
+      Protocol: HTTP
+      Port: !Ref Port
+      TargetType: ip
+      Name: !Sub zyme-caucus-${Environment}-target-group
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      UnhealthyThresholdCount: 2
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 30
+      Tags:
+        - Key: Name
+          Value: Target group
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  ListenerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Certificates:
+        - CertificateArn: !Ref CertificateArn
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref PublicLoadBalancer
+      Port: 443
+      Protocol: HTTPS
+
+  ListenerHTTPRedirect:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - RedirectConfig:
+            Protocol: HTTPS
+            Port: 443
+            Host: '#{host}'
+            Path: '/#{path}'
+            Query: '#{query}'
+            StatusCode: HTTP_301
+          Type: redirect
+      LoadBalancerArn: !Ref PublicLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  # ECS resources ##############################################################
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub zyme-caucus-${Environment}-cluster
+      Tags:
+        - Key: Name
+          Value: Cluster
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub zyme-caucus-${Environment}-task-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      Tags:
+        - Key: Name
+          Value: Task role
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub zyme-caucus-${Environment}-task-execution-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: !Sub zyme-caucus-${Environment}-task-execution-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'secretsmanager:GetSecretValue'
+                Resource:
+                  - !Ref CaucusJwtKeySecretArn
+              - Effect: Allow
+                Action:
+                  - 'execute-api:Invoke'
+                Resource: !Sub
+                  - arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiID}/*/*/*
+                  - ApiID: !Ref Api
+      Tags:
+        - Key: Name
+          Value: Task execution role
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  TaskLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub zyme-caucus-${Environment}-log-group
+
+  TaskLogStream:
+    Type: AWS::Logs::LogStream
+    Properties:
+      LogGroupName: !Ref TaskLogGroup
+      LogStreamName: !Sub zyme-caucus-${Environment}-log-stream
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub zyme-caucus-${Environment}
+      Cpu: 256
+      Memory: 1024
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Sub zyme-caucus-${Environment}-application
+          Image: !Ref DockerImageURI
+          Cpu: 256
+          Memory: 1024
+          PortMappings:
+            - ContainerPort: !Ref Port
+              HostPort: !Ref Port
+              Protocol: tcp
+          Environment:
+            - Name: ZYME_API_HOST
+              Value: !Sub
+                - ${ApiID}.execute-api.${AWS::Region}.amazonaws.com
+                - ApiID: !Ref Api
+            - Name: ZYME_API_ENDPOINT_DNS
+              Value: !Sub
+                - https://${EndpointDnsEntry}/${ApiStageName}
+                - ApiStageName: !Ref ApiStage
+                  EndpointDnsEntry: !Select
+                  - 1
+                  - !Split
+                    - ':'
+                    - !Select
+                      - 0
+                      - !GetAtt ApiEndpoint.DnsEntries
+          Secrets:
+            - Name: SECRET_CAUCUS_JWT_KEY
+              ValueFrom: !Ref CaucusJwtKeySecretArn
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref TaskLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: !Ref TaskLogStream
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !Ref TaskRole
+      ExecutionRoleArn: !Ref TaskExecutionRole
+      Tags:
+        - Key: Name
+          Value: Task definition
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+  Service:
+    Type: AWS::ECS::Service
+    DependsOn: ListenerHTTPS
+    Properties:
+      ServiceName: !Sub zyme-caucus-${Environment}-service
+      Cluster: !Ref Cluster
+      TaskDefinition: !Ref TaskDefinition
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+          - !Ref EcsSecurityGroup
+          Subnets:
+            - !Ref Subnet1
+            - !Ref Subnet2
+            - !Ref Subnet3
+      LoadBalancers:
+        - ContainerName: !Sub zyme-caucus-${Environment}-application
+          ContainerPort: !Ref Port
+          TargetGroupArn: !Ref TargetGroup
+      Tags:
+        - Key: Name
+          Value: ECS service
+        - Key: Application ID
+          Value: Zyme Caucus integration
+        - Key: Environment
+          Value: !FindInMap [EnvMapping, !Ref "Environment", Name]
+
+Outputs:
+  VPC:
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+
+  Subnets:
+    Description: A list of the  subnets
+    Value: !Join [ ",", [ !Ref Subnet1, !Ref Subnet2, !Ref Subnet3 ]]
+
+  Subnet1:
+    Description: A reference to the subnet in the 1st Availability Zone
+    Value: !Ref Subnet1
+
+  Subnet2:
+    Description: A reference to the subnet in the 2nd Availability Zone
+    Value: !Ref Subnet2
+
+  Subnet3:
+    Description: A reference to the subnet in the 3rd Availability Zone
+    Value: !Ref Subnet3

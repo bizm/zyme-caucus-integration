@@ -1,0 +1,23 @@
+{
+  "caucus": {
+    "api.regex": "^https://api.([a-z.]*)?caucus.com",
+    "jwt": {
+      "iss": "Caucus",
+      "aud": "Zyme"
+    }
+  },
+  "zyme": {
+    "verify.jwt": {
+      "iss": "Zyme",
+      "aud": "Caucus",
+      "exp.period.ms": 600000
+    },
+    "auth": {
+      "timeout.ms": 6000,
+      "threshold": 25
+    }
+  },
+  "api": {
+    "https.trust.all": false
+  }
+}

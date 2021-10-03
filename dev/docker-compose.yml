@@ -1,0 +1,29 @@
+services:
+
+  mocks:
+    container_name: zyme-caucus-mocks
+    build:
+      context: mocks
+      dockerfile: Dockerfile
+    ports:
+      - 127.0.0.1:443:443
+    volumes:
+      - workspace:/root/workspace
+
+  app:
+    container_name: zyme-caucus-dev
+    build:
+      context: ..
+      dockerfile: dev/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - 8080:8080
+      - 9000:9000
+    depends_on:
+      - "mocks"
+    volumes:
+      - workspace:/root/workspace
+
+volumes:
+  workspace:

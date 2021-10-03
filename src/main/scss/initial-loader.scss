@@ -1,0 +1,121 @@
+@import 'variables/colors';
+@import 'variables/spacing';
+
+// :global {
+    $initial-loader--color: $color-feedback-green;
+
+    $initial-loader--animation-base-length: 600ms;
+
+    $initial-loader--height: 60px;
+    $initial-loader--bar-min-height: 20px;
+
+    $initial-loader--bar-width: 2px;
+    $initial-loader--bar-padding: 8px;
+
+    $initial-loader--width: 10 * ($initial-loader--bar-width + $initial-loader--bar-padding);
+
+    .initial-loader--mask {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 9999;
+        background: $color-black;
+    }
+
+    .initial-loader--container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        .initial-loader {
+            display: flex;
+            width: $initial-loader--width;
+            height: $initial-loader--height;
+            margin: $size-small auto;
+            transform: rotate(180deg);
+
+            // :global here disables randomising animation name
+            // tho stylelint thinks there is no animation named soundwave..
+            @keyframes soundwave {
+                0% {
+                    //opacity: .35;
+                    height: $initial-loader--bar-min-height;
+                }
+
+                100% {
+                    //opacity: 1;
+                    height: $initial-loader--height - 2px;
+                }
+            }
+
+            .initial-loader--bar {
+                bottom: 1px;
+                width: $initial-loader--bar-width;
+                height: $initial-loader--bar-min-height;
+                margin-right: $initial-loader--bar-padding /2;
+                margin-left: $initial-loader--bar-padding / 2;
+                background: $initial-loader--color;
+                animation-name: soundwave; // stylelint-disable-line no-unknown-animations
+                animation-duration: 0ms;
+                animation-play-state: running;
+                animation-timing-function: linear;
+                animation-delay: -(2 * $initial-loader--animation-base-length);
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+
+                &:nth-child(1) {
+                    // left: $initial-loader--bar-padding;
+                    animation-duration: 1.185 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(2) {
+                    // left: $initial-loader--bar-width + (2 * $initial-loader--bar-padding);
+                    animation-duration: 1.0825 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(3) {
+                    // left: (2 * $initial-loader--bar-width) + (3 * $initial-loader--bar-padding);
+                    animation-duration: 1.0175 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(4) {
+                    // left: (3 * $initial-loader--bar-width) + (4 * $initial-loader--bar-padding);
+                    animation-duration: 1.145 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(5) {
+                    // left: (4 * $initial-loader--bar-width) + (5 * $initial-loader--bar-padding);
+                    animation-duration: $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(6) {
+                    // left: (5 * $initial-loader--bar-width) + (6 * $initial-loader--bar-padding);
+                    animation-duration: 1.0675 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(7) {
+                    // left: (6 * $initial-loader--bar-width) + (7 * $initial-loader--bar-padding);
+                    animation-duration: 1.1025 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(8) {
+                    // left: (7 * $initial-loader--bar-width) + (8 * $initial-loader--bar-padding);
+                    animation-duration: 1.0725 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(9) {
+                    // left: (8 * $initial-loader--bar-width) + (9 * $initial-loader--bar-padding);
+                    animation-duration: 1.2175 * $initial-loader--animation-base-length;
+                }
+
+                &:nth-child(10) {
+                    // left: (9 * $initial-loader--bar-width) + (10 * $initial-loader--bar-padding);
+                    animation-duration: 1.105 * $initial-loader--animation-base-length;
+                }
+            }
+        }
+    }
+// }

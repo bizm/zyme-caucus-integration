@@ -1,0 +1,50 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Test template for private API Gateway"
+
+Parameters:
+  TargetApiGatewayId:
+    Type: String
+
+Resources:
+  Api:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: private-api-test
+      # Policy: ...
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+
+  ApiTestResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt Api.RootResourceId
+      PathPart: test
+      RestApiId: !Ref Api
+
+  ApiTestGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      ResourceId: !Ref ApiTestResource
+      RestApiId: !Ref Api
+      AuthorizationType: NONE
+      Integration:
+        Type: HTTP_PROXY
+        IntegrationHttpMethod: GET
+        Uri: !Sub https://${TargetApiGatewayId}.execute-api.${AWS::Region}.amazonaws.com/Stage/hello
+        PassthroughBehavior: WHEN_NO_MATCH
+        IntegrationResponses:
+          - StatusCode: 200
+
+  ApiDeployments:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      # DeploymentCanarySettings:
+      #   DeploymentCanarySettings
+      Description: Test
+      RestApiId: !Ref Api
+      # StageDescription:
+      #   StageDescription
+      StageName: Test

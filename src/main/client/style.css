@@ -1,0 +1,444 @@
+@font-face {
+  font-family: "Panton Regular";
+  src: url("./fonts/panton-normal.woff2") format("woff2"),
+       url("./fonts/panton-normal.woff") format("woff"),
+       url("./fonts/panton-normal.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Panton Light";
+  src: url("./fonts/panton-light.woff2") format("woff2"),
+       url("./fonts/panton-light.woff") format("woff"),
+       url("./fonts/panton-light.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Panton Black";
+  src: url("./fonts/panton-black.woff2") format("woff2"),
+       url("./fonts/panton-black.woff") format("woff"),
+       url("./fonts/panton-black.ttf") format("truetype");
+}
+
+html, body {
+  font-family: "Panton Regular", 'Panton-Regular','Panton',sans-serif;
+}
+
+#vertical-aligner {
+  background-image: url("background.jpg");
+  background-size: cover;
+}
+
+#main {
+  width: 400px;
+  height: 411px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  padding: 37px 70px 35px 70px;
+  display: flex;
+  flex-flow: column;
+}
+
+#container #main #logo {
+  /* position: relative; */
+  width: 100%;
+  text-align: center;
+}
+#container #main #logo > span {
+  font-size: 2.2rem;
+  line-height: 1.5rem;
+}
+
+#container #main #error {
+  height: 100%;
+  width: 100%;
+  display: table;
+  text-align: center;
+  font-size: .9rem;
+  box-sizing: border-box;
+}
+
+#container #main #error.login {
+  height: auto;
+  width: auto;
+  color: #e95b53;
+}
+
+#container #main #error.scroll {
+  box-sizing: border-box;
+  padding-right: 17px;
+  text-align: left;
+}
+#container #main #error.compact {
+  height: auto;
+  margin: 10px 0 16px 0;
+}
+
+#container #main #error span {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+}
+
+#main #buttons {
+  margin-top: 10px;
+}
+
+#info {
+  background-color: #1c212a;
+  color: #ffffff;
+  width: 576px;
+  height: 411px;
+  box-sizing: border-box;
+  padding: 43px 100px;
+}
+
+#info-text-wrapper-overlap {
+  display: none;
+}
+
+a {
+  color: #009cb6;
+  text-decoration: none;
+}
+
+input, label {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+label {
+  font-family: "Panton Bold";
+  font-size: 0.875rem;
+  color: #1c212a;
+}
+
+button, .button-imitation {
+  font-size: 0.875rem;
+  line-height: 1.71;
+  color: #ffffff;
+  text-align: center;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  background-color: #009CB6;
+  border: 0;
+  border-radius: 5px;
+  transition: background 0.2s, color 0.25s;
+  word-break: break-word;
+  white-space: nowrap;
+  padding: 8px;
+  width: 100%;
+  width: 260px;
+  height: 40px;
+  box-sizing: border-box;
+  font-family: "Panton Bold";
+}
+.button-imitation {
+  cursor: default;
+}
+button:disabled {
+  opacity: 0.2;
+}
+button:disabled:hover {
+  cursor: default;
+}
+button:hover:not(:disabled) {
+  background-color: #007083;
+}
+
+button.cancel {
+  background-color: #ffffff;
+  color: #009CB6;
+  margin-top: 8px;
+}
+button.cancel:hover:not(:disabled) {
+  background-color: #e6e6e6;
+}
+
+button.locale-switch {
+  color: #009cb6;
+  background: none;
+  padding: 0;
+  margin-right: 5px;
+  width: auto;
+  display: inline;
+}
+button.locale-switch:hover {
+  color: #ffffff;
+  background: none;
+}
+
+.spinner {
+  margin: auto;
+  margin-top: 2px;
+  height: 16px;
+  width: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.0);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-right-color: rgba(255, 255, 255, 0.8);
+  border-radius: 100%;
+  animation: rotation 1s infinite linear 0.25s;
+
+  /* the opacity is used to lazyload the spinner, see animation delay */
+  /* this avoid the spinner to be displayed when visible for a very short period of time */
+  opacity: 0;
+}
+
+@keyframes rotation {
+  from {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(359deg);
+  }
+}
+
+input {
+  padding: 0 10px;
+  height: 40px;
+  border: 1px solid #909b9e;
+  border-radius: 4px;
+}
+
+input:focus{
+  outline: none;
+  border-color: #009cb6;
+}
+
+input#username {
+  margin-bottom: 20px;
+}
+
+input.error, input:focus.error {
+  border-color: #e95b53;
+}
+
+div#forms {
+  height: 100%;
+  overflow-y: overlay;
+}
+
+form, #buttons {
+  width: 260px;
+  margin: 0 auto;
+}
+form#login-form label {
+  margin-top: 20px;
+}
+form#roles-form label .name {
+  display: block;
+}
+
+form#roles-form label .ipi {
+  display: block;
+}
+
+#info-inner-box, #info-text-wrapper {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+#info h1 {
+  margin: 0;
+  padding: 0;
+  line-height: 2.6rem;
+}
+.slogan {
+  font-size: 3.4rem;
+  line-height: 1rem;
+  text-transform: uppercase;
+}
+.slogan.thin {
+  font-family: "Panton Light";
+  font-weight: normal;
+}
+.slogan.bold {
+  font-family: "Panton Black";
+  font-weight: normal;
+}
+#info #info-text {
+  height: 100%;
+}
+#info #info-locale-switch a {
+  text-transform: uppercase;
+  font-family: "Panton Bold";
+  margin-right: 8px;
+}
+
+@media (max-width: 1000px) {
+  #vertical-aligner {
+    display: block;
+    background-position: center;
+    min-height: 580px;
+  }
+  #container {
+    display: flex;
+    flex-flow: column-reverse;
+    height: 100%;
+  }
+
+  #loader {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  #main {
+    width: 100%;
+    padding: 43px 0px 20px 0px;
+    bottom: 0;
+  }
+
+  #container #main #forms #error, #container #main #forms #error.scroll {
+    padding: 0 20px;
+  }
+
+  #info {
+    display: flex;
+    background: none;
+    width: 100%;
+    height: 100%;
+    padding: 0px 10px 20px 10px;
+  }
+
+  #info-inner-box {
+    height: auto;
+    width: 260px;
+    margin: auto auto 0 auto;
+  }
+  #info-inner-box h1 {
+    line-height: 2rem;
+  }
+
+  #info-text-button {
+    width: 52px;
+    height: 52px;
+    border-radius: 28px;
+    position: absolute;
+    top: 22px;
+    right: 25px;
+    background-color: #009CB6;
+  }
+
+  #info-text-wrapper {
+    /* display: none; */
+    display: flex;
+    flex-flow: column;
+    position: absolute;
+    background-color: #ffffff;
+    height: auto;
+    top: 28px;
+    left: 0;
+    margin: 24px;
+    padding: 24px;
+    border-radius: 24px;
+    -webkit-box-shadow: 0px 10px 10px -4px rgba(0,0,0,0.46);
+    -moz-box-shadow: 0px 10px 10px -4px rgba(0,0,0,0.46);
+    box-shadow: 0px 10px 10px -4px rgba(0,0,0,0.46);
+    opacity: 0;
+    transition: all 0.4s ease-in, opacity 0.1s ease-out;
+    transform: scale(0);
+  }
+  #info-text-wrapper.show-in-mobile {
+    display: flex;
+    opacity: 1;
+    transform: scale(1);
+    transition: all 0.1s ease-out, opacity 0.2s ease-in;
+  }
+
+  #info-text-wrapper-overlap {
+    display: none;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    background-color: rgba(34, 55, 61, 0.75);
+  }
+  #info-text-wrapper-overlap.show-in-mobile {
+    display: block;
+    opacity: 1;
+    transition: opacity 2s linear;
+  }
+
+  #info #info-text {
+    order: 2;
+    color: #000000;
+    height: auto;
+  }
+
+  .slogan {
+    font-size: 2.4rem;
+  }
+
+  button.locale-switch:hover {
+    color: #007083;
+  }
+}
+
+input[type="radio"] {
+    outline: none;
+}
+input[type="radio"]:checked + label:before {
+    /* border: 1px solid #d00; */
+    border-color: #009cb6 !important;
+    transition: all 0.2s ease;
+}
+[type="radio"]:checked,
+[type="radio"]:not(:checked) {
+    position: absolute;
+    left: -9999px;
+}
+[type="radio"]:checked + label,
+[type="radio"]:not(:checked) + label
+{
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    line-height: 20px;
+    display: inline-block;
+    color: #666;
+}
+[type="radio"]:checked + label:before,
+[type="radio"]:not(:checked) + label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ddd;
+    border-radius: 100%;
+    background: #fff;
+    transition: all 0.2s ease;
+}
+[type="radio"]:checked + label:after,
+[type="radio"]:not(:checked) + label:after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #009cb6;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    border-radius: 100%;
+    -webkit-transition: all 0.2s ease;
+    transition: all 0.2s ease;
+}
+[type="radio"]:not(:checked) + label:after {
+    opacity: 0;
+    -webkit-transform: scale(0);
+    transform: scale(0);
+}
+[type="radio"]:checked + label:after {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}

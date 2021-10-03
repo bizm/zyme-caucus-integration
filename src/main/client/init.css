@@ -1,0 +1,51 @@
+@font-face {
+  font-family: "Panton Bold";
+  src: url("./fonts/panton-demi-bold.woff2") format("woff2"),
+       url("./fonts/panton-demi-bold.woff") format("woff"),
+       url("./fonts/panton-demi-bold.ttf") format("truetype");
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: #606666;
+  /* font-family: "Panton Bold", 'Panton', sans-serif; */
+  /* font-size: 16px; */
+}
+html {
+  font-size: 16px;
+}
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+#container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#vertical-aligner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.initial-loader--text {
+  color: #ffffff;
+  font-size: 13px;
+  font-family: "Panton Bold";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(0%, 200%);
+  width: 100%;
+  text-align: center;
+}
+
+#fonts-loader {
+  position: absolute;
+  top: -1000px;
+}

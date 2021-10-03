@@ -1,0 +1,42 @@
+<div id="main" style="display:none">
+  <div id="logo"><span id="logo-text" class="slogan bold">Zyme-Caucus</span></div>
+  <div id="forms">
+    <form id="login-form" style="display: none;">
+      <label id="username-label" for="username"></label>
+      <input id="username" name="username" type="text" placeholder="" tabindex="1">
+
+      <label id="password-label" for="password"></label>
+      <input id="password" name="password" type="password" placeholder="" tabindex="2">
+    </form>
+    <div id="error" style="display:none"></div>
+    <form id="roles-form" style="display: none;">
+      <input type="radio" name="radio-group" id="radio1">
+      <label for="radio1"><span class="name">Option #1</span><span class="ipi">12345678</span></label>
+      <input type="radio" name="radio-group" id="radio2">
+      <label for="radio2"><span class="name">Option #2</span><span class="ipi">192837465</span></label>
+      <input type="radio" name="radio-group" id="radio3">
+      <label for="radio3"><span class="name">Option #3</span><span class="ipi">735648291</span></label>
+    </form>
+  </div>
+  <div id="buttons">
+    <button id="button-submit" type="button" value="" class="submit" disabled="disabled"
+    style="display: none;" data-phase="login" tabindex="3"></button>
+    <div id="button-submit-fake" class="button-imitation" style="display: block"><div class="spinner"></div></div>
+    <button id="button-cancel" type="button" tabindex="4" class="cancel" data-phase="back-to-caucus"></button>
+  </div>
+</div>
+<div id="info" style="display:none">
+  <div id="info-inner-box">
+    <h1><span id="slogan-thin" class="slogan thin">Rakkaudesta</span><br /><span id="slogan-bold" class="slogan bold">Musiikkiin</span></h1>
+    <div id="info-text-wrapper-overlap"></div>
+    <div id="info-text-wrapper">
+      <div id="info-text"></div>
+      <div id="info-locale-switch">
+        <button id="locale-switch-fi" type="button" data-locale="fi_FI" class="locale-switch">Fi</button>
+        <button id="locale-switch-en" type="button" data-locale="en_EN" class="locale-switch">En</button>
+        <button id="locale-switch-se" type="button" data-locale="sv_SE" class="locale-switch">Sve</button>
+      </div>
+    </div>
+    <div id="info-text-button"></div>
+  </div>
+</div>

@@ -1,0 +1,333 @@
+swagger: "2.0"
+description: Zyme API
+schemes:
+  - https
+x-amazon-apigateway-request-validators:
+  validate-body:
+    validateRequestBody: true
+    validateRequestParameters: false
+paths:
+  /zyme/auth:
+    post:
+      tags:
+      - authorization
+      summary: Provides a token by credentials
+      description: Authenticates a user
+      operationId: authenticateUser
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Credentials object
+        required: true
+        schema:
+          $ref: '#/definitions/Credentials'
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: '#/definitions/Token'
+        '401':
+          description: Unauthorized
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: http://${NlbHost}/zyme/auth
+        responses:
+          '200':
+            statusCode: '200'
+          '401':
+            statusCode: '401'
+        requestParameters: {}
+        passthroughBehavior: when_no_templates
+        connectionType: VPC_LINK
+        connectionId:
+          Ref: VpcLinkId
+        httpMethod: POST
+        type: http
+      x-amazon-apigateway-request-validator: validate-body
+  /zyme/users/me/:
+    get:
+      tags:
+      - customer API
+      summary: Get language code and user name
+      description: Returns the user's name and language code
+      operationId: getCustomerLanguageCode
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/UserInfo'
+        '204':
+          description: User not found
+        '401':
+          description: Unauthorized
+        '403':
+          description: Unauthorized
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: http://${NlbHost}/zyme/users/me/
+        responses:
+          '200':
+            statusCode: '200'
+          '204':
+            statusCode: '204'
+          '401':
+            statusCode: '401'
+          '403':
+            statusCode: '403'
+        requestParameters:
+          integration.request.header.Authorization: method.request.header.Authorization
+        passthroughBehavior: when_no_templates
+        connectionType: VPC_LINK
+        connectionId:
+          Ref: VpcLinkId
+        httpMethod: GET
+        type: http
+  /zyme/users/me/privileges:
+    get:
+      tags:
+      - customer API
+      summary: Get customers all data privileges
+      description: Get list of all customer data privileges
+      operationId: getAllCustomerPrivileges
+      produces:
+      - application/json
+      parameters:
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/WebCustomerPrivileges'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Unauthorized
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: http://${NlbHost}/zyme/users/me/privileges
+        responses:
+          '200':
+            statusCode: '200'
+          '400':
+            statusCode: '400'
+          '401':
+            statusCode: '401'
+          '403':
+            statusCode: '403'
+        requestParameters:
+          integration.request.header.Authorization: method.request.header.Authorization
+        passthroughBehavior: when_no_templates
+        connectionType: VPC_LINK
+        connectionId:
+          Ref: VpcLinkId
+        httpMethod: GET
+        type: http
+  /customers/{customerType}/{customerNumber}/name:
+    get:
+      tags:
+      - customer API
+      summary: Get interested party name of a customer
+      description: Get interested party name by customer type and number
+      operationId: getCustomerName
+      produces:
+      - application/json
+      parameters:
+      - name: customerType
+        in: path
+        description: Customer type
+        required: true
+        type: string
+      - name: customerNumber
+        in: path
+        description: customer number
+        required: true
+        type: integer
+        format: int64
+      - name: Authorization
+        in: header
+        required: true
+        type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/IpName'
+        '204':
+          description: No content
+        '403':
+          description: Unauthorized
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: http://${NlbHost}/zyme/customers/{customerType}/{customerNumber}/name
+        responses:
+          '200':
+            statusCode: '200'
+          '204':
+            statusCode: '204'
+          '403':
+            statusCode: '403'
+        requestParameters:
+          integration.request.path.customerType: method.request.path.customerType
+          integration.request.path.customerNumber: method.request.path.customerNumber
+          integration.request.header.Authorization: method.request.header.Authorization
+        passthroughBehavior: when_no_templates
+        connectionType: VPC_LINK
+        connectionId:
+          Ref: VpcLinkId
+        httpMethod: GET
+        type: http
+  /customers/{customerType}/{customerNumber}:
+    get:
+      tags:
+        - customer API
+      summary: Get customers names and global ID.
+      description: Get basic information of customer with pseudonym names by Zyme customer number and type
+      operationId: getCustomer
+      parameters:
+        - name: customerType
+          in: path
+          description: Customer type
+          required: true
+          schema:
+            type: string
+        - name: customerNumber
+          in: path
+          description: customer number
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZymeCustomer'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized
+        '403':
+          description: Unauthorized
+        '404':
+          description: Not found
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: http://${NlbHost}/zyme/customers/{customerType}/{customerNumber}
+        responses:
+          '200':
+            statusCode: '200'
+          '400':
+            statusCode: '400'
+          '401':
+            statusCode: '401'
+          '403':
+            statusCode: '403'
+          '404':
+            statusCode: '404'
+        requestParameters:
+          integration.request.path.customerType: method.request.path.customerType
+          integration.request.path.customerNumber: method.request.path.customerNumber
+          integration.request.header.Authorization: method.request.header.Authorization
+        passthroughBehavior: when_no_templates
+        connectionType: VPC_LINK
+        connectionId:
+          Ref: VpcLinkId
+        httpMethod: GET
+        type: http
+definitions:
+  Credentials:
+    properties:
+      username:
+        type: "string"
+      password:
+        type: "string"
+    required:
+    - username
+    - password
+  IpName:
+    type: object
+    properties:
+      globalID:
+        type: integer
+        format: int64
+      name:
+        type: string
+      firstName:
+        type: string
+  ZymeCustomer:
+    type: object
+    properties:
+      globalID:
+        type: integer
+        format: int64
+      name:
+        type: string
+      firstName:
+        type: string
+  Token:
+    type: "object"
+    properties:
+      accessToken:
+        type: "string"
+        description: "AccessToken string as issued."
+      refreshToken:
+        type: "string"
+        description: "Refresh token string which caller of an API can use to obtain another accessToken."
+      expiresIn:
+        type: "integer"
+        format: "int64"
+        description: "duration of time in milliseconds the accessToken is granted for"
+  WebCustomerPrivileges:
+    type: object
+    properties:
+      applicationPrivileges:
+        type: array
+        items:
+          $ref: '#/definitions/WebCustomerApplicationPrivilege'
+      dataPrivileges:
+        type: array
+        items:
+          $ref: '#/definitions/WebCustomerPrivilege'
+  WebCustomerApplicationPrivilege:
+    type: object
+    properties:
+      privilegeClass:
+        type: string
+  WebCustomerPrivilege:
+    type: object
+    properties:
+      webCustomerId:
+        $ref: '#/definitions/WebCustomerId'
+      privilegeClass:
+        type: string
+      privilegeLevel:
+        type: string
+  WebCustomerId:
+    type: object
+    properties:
+      customerType:
+        type: string
+      customerNumber:
+        type: integer
+        format: int32
