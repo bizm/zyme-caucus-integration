@@ -7,9 +7,9 @@ module.exports = {
     index: './init.js'
   },
   plugins: [
-    new CopyWebpackPlugin([{
-      from: './index.html'
-    }])
+    new CopyWebpackPlugin({
+      patterns: [ { from: './index.html' }]
+    })
   ],
   output: {
     filename: '[name].bundle.js',
