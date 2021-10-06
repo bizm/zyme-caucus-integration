@@ -56,7 +56,7 @@ SECRET_ZYME_JWT_KEY | Zyme JWT signing key. Stored as AWS secret that is shared 
 We deploy application via AWS Fargate from Docker image stored in ECR repository. Image is built by CodeBuild that is invoked from CodePipeline. Deployment is done by `Deploy` action of pipeline via CloudFormation. There are two CloudFormation stack types &mdash; [CodePipeline stack](#codepipeline-stack) (one in total) and [ECS stack](#ecs-stack) (one per each deployment/environment). The first one should be created/updated manually and the latter is invoked by CodePipeline as described above.
 
 ### ECR repository  
-It makes it easier if you use same ECR repository for all environments. If you run environments on different AWS accounts then and still want to use same ECR repository then it must be configured for cross-account access. For that reason it should be created manually either via [AWS ECR CLI](#aws-ecr-cli) or via [ECR console](#ecr-console). ARN of this repository should be passed to [CodePipeline stack](#codepipeline-stack) as parameter.
+It makes it easier if you use same ECR repository for all environments. If you run environments on different AWS accounts then your ECR repository must be configured for cross-account access. For that reason it should be created manually either via [AWS ECR CLI](#aws-ecr-cli) or via [ECR console](#ecr-console). ARN of this repository should be passed to [CodePipeline stack](#codepipeline-stack) as parameter.
 
 #### ECR cross-account access  
 To set it up you need to allow access to specific roles that will run CodeBuild projects and ECS tasks. CodeBuild service roles are created by [CodePipeline stack](#codepipeline-stack) and can be found under stack resources by `CodeBuildServiceRole` logical id. ECS task execution roles are created by [ECS stack](#ecs-stack) and have logical id `TaskExecutionRole`. All those roles must allowed for push and/or pull access in ECR repository policy. Check [ECR repository policy examples](https://docs.aws.amazon.com/AmazonECR/latest/userguide/RepositoryPolicyExamples.html) for more information.
@@ -209,7 +209,7 @@ In short AWS Fargate works so that ECS Service starts tasks based on provided Ta
 
 ### Private API Gateway capriciousness  
 
-> **_NOTE:_** This lady is a pain! Seriously, if you don't need to use private API Gateway just don't! Otherwise reserve a few extra week for tearing off your hear and beating your head against the wall. Here are my observations, hope they help.
+> **_NOTE:_** This lady is a pain! Seriously, if you don't need to use private API Gateway just don't! Otherwise reserve a few extra weeks for tearing off your hair and beating your head against the wall. Here are my observations, hope they help.
 
 Private API in order to function correctly requires a number of resources to be set up properly. Problem is that error messages are not descriptive enough an don't help to solve the problem. One example is this error:
 ```
